@@ -1,21 +1,14 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
+const AVG_COST = 130
+
 function RoiCalculator() {
   const [fleet, setFleet] = useState(400)
-  const [avgCost, setAvgCost] = useState(100)
 
-  const loss = Math.round(fleet * avgCost * 0.04)
+  const loss = Math.round(fleet * AVG_COST * 0.04)
   const recoverable = Math.round(loss * 0.75)
-
-  let subMonthly
-  if (fleet < 200) subMonthly = 59
-  else if (fleet <= 500) subMonthly = 119
-  else if (fleet <= 1500) subMonthly = 199
-  else subMonthly = null
-
-  const subscription = subMonthly ? `${subMonthly}€/mois` : 'Sur mesure'
-  const roi = subMonthly ? (recoverable / (subMonthly * 12)).toFixed(1) : null
+  const roi = (recoverable / (119 * 12)).toFixed(1)
 
   return (
     <section id="roi" className="py-20 bg-white">
@@ -23,12 +16,12 @@ function RoiCalculator() {
         <h2 className="text-3xl font-bold text-center text-[#1A2E44] mb-2">
           Calculez ce qu'Angel's Share vous rapporte
         </h2>
-        <p className="text-center text-gray-500 mb-10">Ajustez les paramètres pour voir votre ROI en temps réel</p>
+        <p className="text-center text-gray-500 mb-10">Déplacez le curseur pour voir votre ROI en temps réel</p>
 
         {/* Fleet slider */}
-        <div className="mb-8">
+        <div className="mb-10">
           <div className="flex justify-between items-end mb-3">
-            <label className="font-semibold text-[#1A2E44]">Nombre de fûts</label>
+            <label className="font-semibold text-[#1A2E44]">Nombre de fûts dans votre flotte</label>
             <span className="font-extrabold text-[#1A2E44] text-4xl tabular-nums">{fleet}</span>
           </div>
           <input
@@ -38,55 +31,30 @@ function RoiCalculator() {
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#1D9E75]"
           />
           <div className="flex justify-between text-xs text-gray-400 mt-1">
-            <span>100</span>
-            <span>5 000</span>
+            <span>100 fûts</span>
+            <span>5 000 fûts</span>
           </div>
-        </div>
-
-        {/* Keg cost slider */}
-        <div className="mb-10">
-          <div className="flex justify-between items-end mb-3">
-            <label className="font-semibold text-[#1A2E44]">Coût moyen d'un fût</label>
-            <span className="font-extrabold text-[#1A2E44] text-4xl tabular-nums">{avgCost}€</span>
-          </div>
-          <input
-            type="range" min="60" max="200" step="5"
-            value={avgCost}
-            onChange={e => setAvgCost(Number(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#1D9E75]"
-          />
-          <div className="flex justify-between text-xs text-gray-400 mt-1">
-            <span>60€</span>
-            <span>200€</span>
-          </div>
-          <p className="text-xs text-gray-400 mt-2 text-center">Coût moyen constaté dans la filière brassicole française : 100€</p>
+          <p className="text-xs text-gray-400 mt-3 text-center">
+            Coût moyen d'un fût dans la filière brassicole française : <strong className="text-gray-500">{AVG_COST}€</strong>
+          </p>
         </div>
 
         {/* Results */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="bg-[#FFF5F3] border border-[#E85D30]/20 rounded-2xl p-5 text-center">
             <div className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Perte estimée / an</div>
             <div className="text-3xl font-extrabold text-[#E85D30]">{loss.toLocaleString('fr-FR')}€</div>
-            <div className="text-xs text-gray-400 mt-1">≈ 4% de la flotte perdue</div>
+            <div className="text-xs text-gray-400 mt-1">≈ 4% de la flotte</div>
           </div>
           <div className="bg-[#F0FBF7] border border-[#1D9E75]/20 rounded-2xl p-5 text-center">
             <div className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Récupérable</div>
             <div className="text-3xl font-extrabold text-[#1D9E75]">{recoverable.toLocaleString('fr-FR')}€</div>
             <div className="text-xs text-gray-400 mt-1">avec Angel's Share</div>
           </div>
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 text-center">
-            <div className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Abonnement</div>
-            <div className="text-2xl font-extrabold text-[#1A2E44]">{subscription}</div>
-            <div className="text-xs text-gray-400 mt-1">tout inclus, sans engagement</div>
-          </div>
           <div className="bg-[#F0FBF7] border border-[#1D9E75]/30 rounded-2xl p-5 text-center">
-            <div className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Retour sur invest.</div>
-            {roi ? (
-              <div className="text-3xl font-extrabold text-[#1D9E75]">×{roi}</div>
-            ) : (
-              <div className="text-xl font-extrabold text-[#1D9E75]">Sur mesure</div>
-            )}
-            <div className="text-xs text-gray-400 mt-1">dès la première année</div>
+            <div className="text-xs text-gray-500 mb-1 uppercase tracking-wide">ROI</div>
+            <div className="text-3xl font-extrabold text-[#1D9E75]">×{roi}</div>
+            <div className="text-xs text-gray-400 mt-1">dès la 1ère année</div>
           </div>
         </div>
 
