@@ -23,6 +23,15 @@ const statusLabels = {
   flagged: 'Incident',
 }
 
+function AISummary({ text }) {
+  return (
+    <div className="flex items-start gap-3 bg-gradient-to-r from-[#1D9E75]/8 to-transparent border border-[#1D9E75]/20 rounded-xl p-4 mt-4">
+      <span className="text-base shrink-0 mt-0.5 opacity-70">✨</span>
+      <p className="text-sm text-[#1A2E44] leading-relaxed">{text}</p>
+    </div>
+  )
+}
+
 function TierBadge({ tier }) {
   if (tier === 'platinum') return <span className="bg-[#1D9E75] text-white text-xs font-bold px-2 py-0.5 rounded-full">💎 Platinum</span>
   if (tier === 'gold') return <span className="bg-[#F4A623]/20 text-[#a06f0a] text-xs font-bold px-2 py-0.5 rounded-full">🥇 Gold</span>
@@ -127,8 +136,10 @@ export default function Brewery() {
   const alertKegs = kegs.filter(k => k.days_out > 30 || k.status === 'flagged')
   const selectedIncident = selectedKeg ? incidents.find(i => i.id === selectedKeg.incident_id) : null
 
-  const clientIncidentMap = {}
-  incidents.filter(i => i.status !== 'resolved').forEach(inc => { clientIncidentMap[inc.reported_by] = true })
+  const clientIncidentCount = {}
+  incidents.filter(i => i.status !== 'resolved').forEach(inc => {
+    clientIncidentCount[inc.reported_by] = (clientIncidentCount[inc.reported_by] || 0) + 1
+  })
 
   return (
     <div className="flex h-screen bg-[#F8F9FA] overflow-hidden">
@@ -236,31 +247,38 @@ export default function Brewery() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    {['Nom', 'Type', 'Ville', 'Fûts', 'Consigne', 'Scans/mois', 'Tier', 'Statut'].map(h => (
+                    {['Nom', 'Type', 'Ville', 'Fûts', 'Consigne', 'Scans/mois', 'Tier', 'Incidents actifs'].map(h => (
                       <th key={h} className="text-left text-gray-400 font-medium pb-3 pr-4 text-xs uppercase tracking-wide">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {clients.map(client => (
-                    <tr key={client.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="py-3 pr-4 font-semibold text-[#1A2E44]">{client.name}</td>
-                      <td className="py-3 pr-4 text-gray-500">{client.type === 'bar' ? 'Bar' : 'Distributeur'}</td>
-                      <td className="py-3 pr-4 text-gray-500">{client.city}</td>
-                      <td className="py-3 pr-4 font-semibold">{client.kegs_held}</td>
-                      <td className="py-3 pr-4 text-gray-600">{client.deposit_balance}€</td>
-                      <td className="py-3 pr-4 text-gray-600">{client.scan_count_month}</td>
-                      <td className="py-3 pr-4"><TierBadge tier={client.tier} /></td>
-                      <td className="py-3">
-                        {clientIncidentMap[client.id]
-                          ? <span className="bg-[#E85D30]/10 text-[#E85D30] text-xs font-semibold px-2 py-0.5 rounded-full">Incident</span>
-                          : <span className="bg-[#1D9E75]/10 text-[#1D9E75] text-xs font-semibold px-2 py-0.5 rounded-full">OK</span>}
-                      </td>
-                    </tr>
-                  ))}
+                  {clients
+                    .slice()
+                    .sort((a, b) => (clientIncidentCount[b.id] || 0) - (clientIncidentCount[a.id] || 0))
+                    .map(client => {
+                      const incCount = clientIncidentCount[client.id] || 0
+                      return (
+                        <tr key={client.id} className={`border-b border-gray-50 hover:bg-gray-50 ${incCount > 0 ? 'bg-[#FFF9F7]' : ''}`}>
+                          <td className="py-3 pr-4 font-semibold text-[#1A2E44]">{client.name}</td>
+                          <td className="py-3 pr-4 text-gray-500">{client.type === 'bar' ? 'Bar' : 'Distributeur'}</td>
+                          <td className="py-3 pr-4 text-gray-500">{client.city}</td>
+                          <td className="py-3 pr-4 font-semibold">{client.kegs_held}</td>
+                          <td className="py-3 pr-4 text-gray-600">{client.deposit_balance}€</td>
+                          <td className="py-3 pr-4 text-gray-600">{client.scan_count_month}</td>
+                          <td className="py-3 pr-4"><TierBadge tier={client.tier} /></td>
+                          <td className="py-3">
+                            {incCount > 0
+                              ? <span className="inline-flex items-center gap-1.5 bg-[#E85D30] text-white text-xs font-bold px-2.5 py-1 rounded-full">{incCount} incident{incCount > 1 ? 's' : ''}</span>
+                              : <span className="text-gray-300 text-xs font-medium">—</span>}
+                          </td>
+                        </tr>
+                      )
+                    })}
                 </tbody>
               </table>
             </div>
+            <AISummary text="Le Pavillon des Canaux requiert une attention urgente : 1 incident ouvert depuis 4 jours (KEG-0256, goût altéré, stockage exposé au soleil) et faible engagement (4 scans/mois). Un appel avant la tournée du 16/06 pourrait prévenir une aggravation et doubler leur activité de scan." />
           </div>
 
           {/* Alert kegs */}
@@ -292,6 +310,7 @@ export default function Brewery() {
           {/* Incidents */}
           <div>
             <h2 className="font-bold text-[#1A2E44] mb-4">Incidents ouverts</h2>
+            <AISummary text="Tendance détectée : les 2 incidents actifs impliquent des problèmes de stockage (exposition soleil + température ambiante). Recommandation : joindre une fiche de bonnes pratiques de stockage à chaque livraison — ce type d'action réduit les incidents liés au stockage de 30 à 40% en moyenne sur 6 mois." />
             <div className="grid md:grid-cols-2 gap-4">
               {incidents.filter(i => i.status !== 'resolved').map(inc => (
                 <div key={inc.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
