@@ -230,7 +230,7 @@ export default function Brewery() {
                 <span className="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-semibold">NSM</span>
               </div>
               <div className="text-3xl font-extrabold text-emerald-500">{currentRate}%</div>
-              <div className="text-xs text-emerald-500 mb-2">{savings.vs_industry_avg} vs secteur</div>
+              <div className="text-xs text-emerald-500 mb-2">+2,1pts vs secteur</div>
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${((currentRate - 90) / 9) * 100}%` }} />
