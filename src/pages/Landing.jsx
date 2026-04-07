@@ -108,7 +108,7 @@ function LeadGenModal({ onClose }) {
 // ─── ROI Calculator ───────────────────────────────────────────────────────────
 
 function RoiCalculator({ onOpenLead }) {
-  const [fleet, setFleet] = useState(400)
+  const [fleet, setFleet] = useState(500)
 
   const loss = Math.round(fleet * AVG_COST * 0.04)
   const recoverable = Math.round(loss * 0.75)
@@ -125,17 +125,17 @@ function RoiCalculator({ onOpenLead }) {
         <div className="mb-10">
           <div className="flex justify-between items-end mb-3">
             <label className="font-semibold text-[#0F172A]">Nombre de fûts dans votre flotte</label>
-            <span className="font-extrabold text-[#0F172A] text-4xl tabular-nums">{fleet}</span>
+            <span className="font-extrabold text-[#0F172A] text-4xl tabular-nums">{fleet.toLocaleString('fr-FR')}</span>
           </div>
           <input
-            type="range" min="100" max="5000" step="50"
+            type="range" min="500" max="7000" step="100"
             value={fleet}
             onChange={e => setFleet(Number(e.target.value))}
             className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
           />
           <div className="flex justify-between text-xs text-slate-400 mt-1">
-            <span>100 fûts</span>
-            <span>5 000 fûts</span>
+            <span>500 fûts</span>
+            <span>7 000 fûts</span>
           </div>
           <p className="text-xs text-slate-400 mt-3 text-center">
             Coût moyen d'un fût dans la filière brassicole française : <strong className="text-slate-500">{AVG_COST}€</strong>
@@ -872,8 +872,40 @@ export default function Landing() {
       {/* 1. Hero */}
       <section className="relative min-h-screen flex items-center bg-[#0F172A]">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Glow blobs */}
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-800/10 rounded-full blur-3xl -translate-x-1/4 translate-y-1/4" />
+          {/* Beer bubbles */}
+          {[
+            { left: '8%',  size: 10, duration: '9s',  delay: '0s'    },
+            { left: '16%', size: 6,  duration: '12s', delay: '1.5s'  },
+            { left: '24%', size: 14, duration: '8s',  delay: '3s'    },
+            { left: '33%', size: 8,  duration: '11s', delay: '0.8s'  },
+            { left: '42%', size: 5,  duration: '14s', delay: '2.2s'  },
+            { left: '51%', size: 12, duration: '10s', delay: '4s'    },
+            { left: '60%', size: 7,  duration: '9s',  delay: '1s'    },
+            { left: '68%', size: 16, duration: '13s', delay: '2.8s'  },
+            { left: '76%', size: 6,  duration: '8s',  delay: '0.4s'  },
+            { left: '84%', size: 10, duration: '11s', delay: '3.5s'  },
+            { left: '91%', size: 8,  duration: '10s', delay: '1.8s'  },
+            { left: '20%', size: 4,  duration: '15s', delay: '5s'    },
+            { left: '55%', size: 9,  duration: '12s', delay: '6s'    },
+            { left: '72%', size: 5,  duration: '9s',  delay: '4.5s'  },
+            { left: '38%', size: 11, duration: '13s', delay: '7s'    },
+          ].map((b, i) => (
+            <div
+              key={i}
+              className="absolute bottom-0 rounded-full border border-blue-400/20 bg-blue-400/5 animate-bubble-rise"
+              style={{
+                left: b.left,
+                width: b.size,
+                height: b.size,
+                '--duration': b.duration,
+                animationDelay: b.delay,
+                animationDuration: b.duration,
+              }}
+            />
+          ))}
         </div>
         <div className="relative max-w-4xl mx-auto px-6 text-center">
           <div className="inline-block bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-full px-4 py-1 text-sm font-semibold mb-8">
@@ -908,10 +940,10 @@ export default function Landing() {
             <strong className="text-white">Personne ne sait où ils sont.</strong>
           </p>
           <div className="bg-white/5 border border-white/10 rounded-2xl p-10 inline-block">
-            <div className="text-6xl md:text-7xl font-extrabold text-red-400 mb-3">52 000€</div>
-            <div className="text-white text-xl font-semibold">d'impact annuel</div>
-            <div className="text-slate-400 mt-2">pour une brasserie de 1 000 fûts</div>
-            <div className="text-slate-500 text-xs mt-1">pertes + litiges consignes + coûts de remplacement</div>
+            <div className="text-6xl md:text-7xl font-extrabold text-red-400 mb-3">15 600€</div>
+            <div className="text-white text-xl font-semibold">de pertes directes / an</div>
+            <div className="text-slate-400 mt-2">pour une brasserie de 3 000 fûts</div>
+            <div className="text-slate-500 text-xs mt-1">3 000 fûts × 4% perdus × 130€/fût</div>
           </div>
         </div>
       </section>

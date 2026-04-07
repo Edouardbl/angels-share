@@ -18,6 +18,7 @@ export default {
         'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'card-in': 'cardIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'pulse-ring': 'pulseRing 1.5s ease-out infinite',
+        'bubble-rise': 'bubbleRise var(--duration, 8s) ease-in infinite',
       },
       keyframes: {
         scanLine: {
@@ -53,6 +54,12 @@ export default {
           '0%': { transform: 'scale(1)', opacity: '0.6' },
           '70%': { transform: 'scale(1.4)', opacity: '0' },
           '100%': { transform: 'scale(1.4)', opacity: '0' },
+        },
+        bubbleRise: {
+          '0%': { transform: 'translateY(0) scale(1)', opacity: '0' },
+          '10%': { opacity: '1' },
+          '85%': { opacity: '0.6' },
+          '100%': { transform: 'translateY(-110vh) scale(1.15)', opacity: '0' },
         },
       },
     },
