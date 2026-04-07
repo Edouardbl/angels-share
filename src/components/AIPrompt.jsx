@@ -77,7 +77,7 @@ function InsightCard({ insight, index, onFollowUp }) {
   )
 }
 
-export default function AIPrompt({ getResponse, insights = [] }) {
+export default function AIPrompt({ getResponse, insights = [], triggerQuery = null }) {
   const [isOpen, setIsOpen] = useState(false)
   const [tab, setTab] = useState('insights')
   const [query, setQuery] = useState('')
@@ -93,6 +93,14 @@ export default function AIPrompt({ getResponse, insights = [] }) {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [isOpen, tab])
+
+  useEffect(() => {
+    if (!triggerQuery?.text) return
+    setIsOpen(true)
+    setTab('chat')
+    setQuery(triggerQuery.text)
+    setTimeout(() => inputRef.current?.focus(), 150)
+  }, [triggerQuery])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })

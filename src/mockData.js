@@ -8,12 +8,25 @@ export const mockData = {
     id: "brs_001",
     name: "Brasserie Le Singe Savant",
     city: "Lille",
-    fleet_size: 342,
+    fleet_size: 1247,
     deposit_amount: 30,
+    fleet_distribution: {
+      at_client: 842,
+      at_brewery: 283,
+      filled: 97,
+      flagged: 25
+    },
+    savings: {
+      monthly_kegs_recovered: 28,
+      monthly_euros_saved: 3640,
+      annual_projected: 43680,
+      kegs_never_lost_ytd: 312,
+      vs_industry_avg: "+2.1pts"
+    },
     return_rate_history: [
-      { month: "Jan", rate: 94.2 }, { month: "Fév", rate: 94.8 },
-      { month: "Mar", rate: 95.1 }, { month: "Avr", rate: 95.6 },
-      { month: "Mai", rate: 96.2 }, { month: "Juin", rate: 96.8 }
+      { month: "Jan", rate: 95.8 }, { month: "Fév", rate: 96.2 },
+      { month: "Mar", rate: 96.7 }, { month: "Avr", rate: 97.1 },
+      { month: "Mai", rate: 97.6 }, { month: "Juin", rate: 98.1 }
     ]
   },
   distributor: {
@@ -48,7 +61,12 @@ export const mockData = {
   clients: [
     { id: "bar_002", name: "Ground Control", type: "bar", city: "Paris 12e", kegs_held: 24, deposit_balance: 720, scan_count_month: 31, tier: "platinum" },
     { id: "bar_003", name: "Le Pavillon des Canaux", type: "bar", city: "Paris 19e", kegs_held: 5, deposit_balance: 150, scan_count_month: 4, tier: "silver" },
-    { id: "dist_001", name: "Rouquette Distribution", type: "distributor", city: "Île-de-France", kegs_held: 47, deposit_balance: 1410, scan_count_month: 58, tier: "platinum" }
+    { id: "bar_004", name: "La Capsule", type: "bar", city: "Lille", kegs_held: 18, deposit_balance: 540, scan_count_month: 22, tier: "gold" },
+    { id: "bar_005", name: "Le Tigre", type: "bar", city: "Lyon 2e", kegs_held: 31, deposit_balance: 930, scan_count_month: 38, tier: "platinum" },
+    { id: "bar_006", name: "Biérothèque du Marais", type: "bar", city: "Paris 4e", kegs_held: 12, deposit_balance: 360, scan_count_month: 14, tier: "gold" },
+    { id: "dist_001", name: "Rouquette Distribution", type: "distributor", city: "Île-de-France", kegs_held: 47, deposit_balance: 1410, scan_count_month: 58, tier: "platinum" },
+    { id: "dist_002", name: "BeerLink Sud", type: "distributor", city: "Lyon", kegs_held: 83, deposit_balance: 2490, scan_count_month: 94, tier: "platinum" },
+    { id: "dist_003", name: "Nord Boissons", type: "distributor", city: "Lille", kegs_held: 62, deposit_balance: 1860, scan_count_month: 71, tier: "gold" }
   ],
   kegs: [
     { id: "KEG-0389", format: "30L", beer: "IPA Mosaic", lot: "LOT-2025-034", status: "at_client", holder: "bar_002", delivered_at: "2025-05-15", days_out: 30 },

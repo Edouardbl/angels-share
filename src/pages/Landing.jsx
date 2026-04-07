@@ -1,9 +1,113 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const AVG_COST = 130
 
-function RoiCalculator() {
+// ─── Lead gen modal ──────────────────────────────────────────────────────────
+
+function LeadGenModal({ onClose }) {
+  const [sent, setSent] = useState(false)
+  const [form, setForm] = useState({ name: '', email: '', company: '', fleet: '' })
+
+  const canSubmit = form.name.trim() && form.email.includes('@') && form.company.trim()
+
+  const handleSubmit = e => {
+    e.preventDefault()
+    if (!canSubmit) return
+    setSent(true)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative animate-fade-in">
+        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors text-lg">✕</button>
+
+        {sent ? (
+          <div className="text-center py-6">
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-[#0F172A] mb-2">Demande reçue !</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">
+              Merci <strong>{form.name}</strong>. Notre équipe vous recontacte sous 24h à <strong>{form.email}</strong> pour organiser votre démonstration.
+            </p>
+            <button onClick={onClose} className="mt-6 bg-[#0F172A] text-white font-semibold px-8 py-3 rounded-xl text-sm transition-colors hover:bg-[#1E293B]">
+              Fermer
+            </button>
+          </div>
+        ) : (
+          <>
+            <h3 className="text-xl font-bold text-[#0F172A] mb-1">Démarrer votre essai gratuit</h3>
+            <p className="text-slate-500 text-sm mb-6">30 jours gratuits · Sans engagement · Réponse sous 24h</p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#0F172A] mb-1">Prénom &amp; Nom *</label>
+                  <input
+                    value={form.name}
+                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="Victor Maës"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#0F172A] mb-1">Email professionnel *</label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    placeholder="victor@brasserie.fr"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#0F172A] mb-1">Brasserie / Entreprise *</label>
+                <input
+                  value={form.company}
+                  onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
+                  placeholder="Brasserie du Singe Savant"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#0F172A] mb-1">Taille de flotte</label>
+                <select
+                  value={form.fleet}
+                  onChange={e => setForm(f => ({ ...f, fleet: e.target.value }))}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 bg-white"
+                >
+                  <option value="">Sélectionner...</option>
+                  <option value="<200">Moins de 200 fûts</option>
+                  <option value="200-500">200 à 500 fûts</option>
+                  <option value="500-1500">500 à 1 500 fûts</option>
+                  <option value=">1500">Plus de 1 500 fûts</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className={`w-full font-bold py-3.5 rounded-xl text-sm transition-colors ${
+                  canSubmit ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                }`}
+              >
+                Démarrer mon essai gratuit
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── ROI Calculator ───────────────────────────────────────────────────────────
+
+function RoiCalculator({ onOpenLead }) {
   const [fleet, setFleet] = useState(400)
 
   const loss = Math.round(fleet * AVG_COST * 0.04)
@@ -57,7 +161,10 @@ function RoiCalculator() {
         </div>
 
         <div className="text-center">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-10 py-4 rounded-xl text-lg transition-colors">
+          <button
+            onClick={onOpenLead}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-10 py-4 rounded-xl text-lg transition-colors"
+          >
             Démarrer mon essai gratuit
           </button>
         </div>
@@ -65,6 +172,8 @@ function RoiCalculator() {
     </section>
   )
 }
+
+// ─── Pricing ──────────────────────────────────────────────────────────────────
 
 const PLANS = [
   {
@@ -108,7 +217,7 @@ const PLANS = [
     description: "Pour les brasseries établies avec des besoins avancés d'intégration et d'analyse.",
     features: [
       'Tout Pro, plus :',
-      'Intégrations ERP (Sage, Cegid…)',
+      'Intégrations ERP (Sage, Cegid, Odoo…)',
       'Analytics avancées par lot',
       'API & webhooks',
       'Gestionnaire de compte dédié',
@@ -120,7 +229,7 @@ const PLANS = [
   },
 ]
 
-function PricingSection() {
+function PricingSection({ onOpenLead }) {
   return (
     <section id="pricing" className="py-24 bg-[#F8FAFC]">
       <div className="max-w-6xl mx-auto px-6">
@@ -146,7 +255,6 @@ function PricingSection() {
                   </span>
                 </div>
               )}
-
               <div className="mb-6">
                 <div className={`text-sm font-bold uppercase tracking-wider mb-2 ${plan.highlight ? 'text-blue-400' : 'text-slate-400'}`}>
                   {plan.name}
@@ -158,30 +266,24 @@ function PricingSection() {
                 <div className="text-xs font-semibold text-blue-500 mb-4">{plan.fleet}</div>
                 <p className={`text-sm leading-relaxed ${plan.highlight ? 'text-slate-300' : 'text-slate-500'}`}>{plan.description}</p>
               </div>
-
               <ul className="space-y-2.5 mb-8 flex-1">
                 {plan.features.map((f, i) => (
-                  <li
-                    key={i}
-                    className={`flex items-start gap-2 text-sm ${
-                      f.startsWith('Tout')
-                        ? `font-semibold ${plan.highlight ? 'text-slate-200' : 'text-[#0F172A]'}`
-                        : plan.highlight ? 'text-slate-300' : 'text-slate-600'
-                    }`}
-                  >
-                    {!f.startsWith('Tout') && (
-                      <span className="text-blue-500 font-bold shrink-0 mt-0.5">✓</span>
-                    )}
+                  <li key={i} className={`flex items-start gap-2 text-sm ${
+                    f.startsWith('Tout')
+                      ? `font-semibold ${plan.highlight ? 'text-slate-200' : 'text-[#0F172A]'}`
+                      : plan.highlight ? 'text-slate-300' : 'text-slate-600'
+                  }`}>
+                    {!f.startsWith('Tout') && <span className="text-blue-500 font-bold shrink-0 mt-0.5">✓</span>}
                     {f}
                   </li>
                 ))}
               </ul>
-
-              <button className={`w-full font-bold py-3.5 rounded-xl text-sm transition-colors ${
-                plan.highlight
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-[#0F172A] hover:bg-[#1E293B] text-white'
-              }`}>
+              <button
+                onClick={onOpenLead}
+                className={`w-full font-bold py-3.5 rounded-xl text-sm transition-colors ${
+                  plan.highlight ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-[#0F172A] hover:bg-[#1E293B] text-white'
+                }`}
+              >
                 {plan.cta}
               </button>
             </div>
@@ -201,6 +303,8 @@ function PricingSection() {
     </section>
   )
 }
+
+// ─── Audience section ─────────────────────────────────────────────────────────
 
 const AUDIENCES = [
   {
@@ -277,9 +381,7 @@ function AudienceSection() {
               key={a.id}
               onClick={() => setActive(a.id)}
               className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
-                active === a.id
-                  ? 'bg-[#0F172A] text-white shadow-md'
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                active === a.id ? 'bg-[#0F172A] text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
               }`}
             >
               {a.badge}
@@ -295,20 +397,14 @@ function AudienceSection() {
               </span>
               <h3 className="text-2xl font-extrabold text-[#0F172A] mb-3 leading-snug">{current.headline}</h3>
               <p className="text-slate-500 text-sm leading-relaxed mb-6">{current.subline}</p>
-
               <div className={`inline-flex flex-col items-center px-6 py-4 rounded-xl mb-6 ${current.statBg}`}>
                 <div className="text-3xl font-extrabold">{current.stat.value}</div>
                 <div className="text-xs font-medium mt-0.5 opacity-80 text-center">{current.stat.label}</div>
               </div>
-
-              <Link
-                to={current.cta.to}
-                className="inline-block bg-[#0F172A] hover:bg-[#1E293B] text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors"
-              >
+              <Link to={current.cta.to} className="inline-block bg-[#0F172A] hover:bg-[#1E293B] text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors">
                 {current.cta.label} →
               </Link>
             </div>
-
             <ul className="space-y-3 mt-2">
               {current.features.map((f, i) => (
                 <li key={i} className="flex items-start gap-3">
@@ -326,19 +422,8 @@ function AudienceSection() {
   )
 }
 
-// Animated keg icon
-function KegIcon({ className = 'w-8 h-8', color = 'currentColor' }) {
-  return (
-    <svg className={className} viewBox="0 0 40 40" fill="none">
-      <rect x="8" y="6" width="24" height="28" rx="5" stroke={color} strokeWidth="2.5" fill="none" />
-      <rect x="4" y="12" width="32" height="4" rx="2" fill={color} opacity="0.2" />
-      <rect x="4" y="24" width="32" height="4" rx="2" fill={color} opacity="0.2" />
-      <line x1="20" y1="6" x2="20" y2="34" stroke={color} strokeWidth="1.5" opacity="0.3" />
-    </svg>
-  )
-}
+// ─── How it works ─────────────────────────────────────────────────────────────
 
-// Animated keg flow diagram
 function KegFlowDiagram() {
   const [step, setStep] = useState(0)
   const steps = [
@@ -348,22 +433,16 @@ function KegFlowDiagram() {
     { from: 3, to: 0, label: 'Retour brasserie confirmé' },
   ]
   const actors = [
-    { label: 'Brasserie', icon: '🏭', color: '#2563EB', bg: 'bg-blue-50', border: 'border-blue-200' },
-    { label: 'Stock', icon: '📦', color: '#F59E0B', bg: 'bg-amber-50', border: 'border-amber-200' },
-    { label: 'Distributeur', icon: '🚚', color: '#8B5CF6', bg: 'bg-purple-50', border: 'border-purple-200' },
-    { label: 'Bar', icon: '🍺', color: '#10B981', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+    { label: 'Brasserie', icon: '🏭', bg: 'bg-blue-50', border: 'border-blue-200' },
+    { label: 'Stock', icon: '📦', bg: 'bg-amber-50', border: 'border-amber-200' },
+    { label: 'Distributeur', icon: '🚚', bg: 'bg-purple-50', border: 'border-purple-200' },
+    { label: 'Bar', icon: '🍺', bg: 'bg-emerald-50', border: 'border-emerald-200' },
   ]
-
-  useEffect(() => {
-    const t = setInterval(() => setStep(s => (s + 1) % steps.length), 2000)
-    return () => clearInterval(t)
-  }, [])
 
   const currentStep = steps[step]
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Actors row */}
       <div className="grid grid-cols-4 gap-3 mb-6">
         {actors.map((actor, i) => (
           <div
@@ -383,35 +462,24 @@ function KegFlowDiagram() {
         ))}
       </div>
 
-      {/* Animated keg path */}
       <div className="relative h-16 mb-6">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full h-0.5 bg-slate-200 relative">
-            {[0, 1, 2].map(i => (
-              <div
-                key={i}
-                className="absolute top-1/2 -translate-y-1/2 flex items-center"
-                style={{ left: `${(i / 3) * 100 + 16.6}%` }}
-              >
-                <svg className="w-3 h-3 text-slate-300" viewBox="0 0 12 12" fill="currentColor">
-                  <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
-                </svg>
-              </div>
-            ))}
-          </div>
+          <div className="w-full h-0.5 bg-slate-200" />
         </div>
-        {/* Moving keg */}
         <div
           className="absolute top-1/2 -translate-y-1/2 transition-all duration-700 ease-in-out"
           style={{ left: `calc(${(currentStep.to / 3) * 100}% - 16px)` }}
         >
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-md shadow-blue-200">
-            <KegIcon className="w-5 h-5" color="white" />
+            <svg className="w-4 h-4 text-white" viewBox="0 0 40 40" fill="none">
+              <rect x="8" y="6" width="24" height="28" rx="5" stroke="white" strokeWidth="2.5" />
+              <rect x="4" y="12" width="32" height="4" rx="2" fill="white" opacity="0.3" />
+              <rect x="4" y="24" width="32" height="4" rx="2" fill="white" opacity="0.3" />
+            </svg>
           </div>
         </div>
       </div>
 
-      {/* Step label */}
       <div className="text-center">
         <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-5 py-2">
           <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
@@ -422,142 +490,9 @@ function KegFlowDiagram() {
             <button
               key={i}
               onClick={() => setStep(i)}
-              className={`w-1.5 h-1.5 rounded-full transition-all ${i === step ? 'bg-blue-600 w-4' : 'bg-slate-300'}`}
+              className={`h-1.5 rounded-full transition-all ${i === step ? 'bg-blue-600 w-4' : 'bg-slate-300 w-1.5'}`}
             />
           ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Mini dashboard mockups
-function DashboardMockups() {
-  return (
-    <div className="grid md:grid-cols-3 gap-6 mt-16">
-      {/* Brewery mockup */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="bg-[#0F172A] px-4 py-3 flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-blue-600 flex items-center justify-center">
-            <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" strokeLinecap="round" />
-            </svg>
-          </div>
-          <span className="text-white text-xs font-semibold">Brasseur</span>
-          <span className="ml-auto text-slate-500 text-xs">Brasserie Le Singe Savant</span>
-        </div>
-        <div className="p-4 space-y-3">
-          <div className="grid grid-cols-3 gap-2">
-            {[{ v: '342', l: 'Flotte' }, { v: '96.8%', l: 'Retour' }, { v: '2', l: 'Incidents' }].map(k => (
-              <div key={k.l} className="bg-slate-50 rounded-lg p-2 text-center">
-                <div className="font-extrabold text-[#0F172A] text-sm">{k.v}</div>
-                <div className="text-xs text-slate-400">{k.l}</div>
-              </div>
-            ))}
-          </div>
-          <div className="bg-slate-50 rounded-lg p-3">
-            <div className="text-xs font-semibold text-[#0F172A] mb-2">Clients</div>
-            {[
-              { name: 'Ground Control', kegs: 24, inc: 1 },
-              { name: 'Rouquette Dist.', kegs: 47, inc: 0 },
-            ].map(c => (
-              <div key={c.name} className="flex items-center justify-between py-1 text-xs">
-                <span className="text-slate-600">{c.name}</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-slate-500">{c.kegs} fûts</span>
-                  {c.inc > 0 && <span className="bg-red-100 text-red-500 font-bold px-1.5 py-0.5 rounded-full">{c.inc}</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg px-3 py-2 flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-            Analyses IA disponibles
-          </div>
-        </div>
-      </div>
-
-      {/* Distributor mockup */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="bg-[#0F172A] px-4 py-3 flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-purple-500 flex items-center justify-center">
-            <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="1" y="3" width="15" height="13" rx="1" strokeLinecap="round" />
-              <path d="M16 8h4l3 5v3h-7V8z" strokeLinecap="round" />
-              <circle cx="5.5" cy="18.5" r="2.5" />
-              <circle cx="18.5" cy="18.5" r="2.5" />
-            </svg>
-          </div>
-          <span className="text-white text-xs font-semibold">Distributeur</span>
-          <span className="ml-auto text-slate-500 text-xs">Rouquette Dist.</span>
-        </div>
-        <div className="p-4 space-y-3">
-          <div className="grid grid-cols-3 gap-2">
-            {[{ v: '47', l: 'Fûts' }, { v: '96%', l: 'Retour' }, { v: '1 410€', l: 'Consigne' }].map(k => (
-              <div key={k.l} className="bg-slate-50 rounded-lg p-2 text-center">
-                <div className="font-extrabold text-[#0F172A] text-sm">{k.v}</div>
-                <div className="text-xs text-slate-400">{k.l}</div>
-              </div>
-            ))}
-          </div>
-          <div className="bg-slate-50 rounded-lg p-3">
-            <div className="text-xs font-semibold text-[#0F172A] mb-2">Tournée 16/06</div>
-            {[
-              { name: 'Ground Control', tag: 'Livraison + Collecte', urgent: true },
-              { name: 'Le Pavillon', tag: 'Collecte', urgent: false },
-            ].map(s => (
-              <div key={s.name} className="flex items-center justify-between py-1 text-xs">
-                <span className="text-slate-600">{s.name}</span>
-                <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${s.urgent ? 'bg-red-50 text-red-500' : 'bg-slate-100 text-slate-500'}`}>{s.tag}</span>
-              </div>
-            ))}
-          </div>
-          <div className="bg-red-50 text-red-600 text-xs font-semibold rounded-lg px-3 py-2 flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            KEG-0205 dormant : 74 jours
-          </div>
-        </div>
-      </div>
-
-      {/* Bar mockup */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="bg-[#0F172A] px-4 py-3 flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-emerald-500 flex items-center justify-center">
-            <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3" strokeLinecap="round" />
-            </svg>
-          </div>
-          <span className="text-white text-xs font-semibold">Bar</span>
-          <span className="ml-auto text-slate-500 text-xs">Ground Control</span>
-        </div>
-        <div className="p-4 space-y-3">
-          <div className="grid grid-cols-3 gap-2">
-            {[{ v: '24', l: 'Fûts' }, { v: '31', l: 'Scans' }, { v: '💎', l: 'Platinum' }].map(k => (
-              <div key={k.l} className="bg-slate-50 rounded-lg p-2 text-center">
-                <div className="font-extrabold text-[#0F172A] text-sm">{k.v}</div>
-                <div className="text-xs text-slate-400">{k.l}</div>
-              </div>
-            ))}
-          </div>
-          <div className="bg-slate-50 rounded-lg p-3">
-            <div className="text-xs font-semibold text-[#0F172A] mb-2">Rotation</div>
-            {[
-              { beer: 'IPA Mosaic', days: '4,2j', trend: 'up' },
-              { beer: 'Pale Ale Citra', days: '6,1j', trend: 'stable' },
-            ].map(r => (
-              <div key={r.beer} className="flex items-center justify-between py-1 text-xs">
-                <span className="text-slate-600">{r.beer}</span>
-                <div className="flex items-center gap-1">
-                  <span className="text-slate-500">{r.days}</span>
-                  <span className={r.trend === 'up' ? 'text-emerald-500' : 'text-slate-400'}>{r.trend === 'up' ? '↑' : '→'}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-lg px-3 py-2 flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            3 offres Platinum débloquées
-          </div>
         </div>
       </div>
     </div>
@@ -577,24 +512,9 @@ function HowItWorksSection() {
 
         <div className="grid md:grid-cols-3 gap-8 mt-16">
           {[
-            {
-              step: '1',
-              title: 'QR codes sur les fûts',
-              desc: 'Le brasseur génère et colle les QR codes sur ses fûts. Chaque fût obtient une identité digitale unique.',
-              color: 'bg-blue-600',
-            },
-            {
-              step: '2',
-              title: 'Scan à chaque transfert',
-              desc: "Chaque acteur scanne en 5 secondes à chaque mouvement. L'application fonctionne sur n'importe quel smartphone.",
-              color: 'bg-purple-500',
-            },
-            {
-              step: '3',
-              title: 'Data en temps réel',
-              desc: 'La donnée remonte instantanément — localisation, durée, incidents, insights IA. Plus aucun fût ne disparaît silencieusement.',
-              color: 'bg-emerald-500',
-            },
+            { step: '1', title: 'QR codes sur les fûts', desc: 'Le brasseur génère et colle les QR codes sur ses fûts. Chaque fût obtient une identité digitale unique.', color: 'bg-blue-600' },
+            { step: '2', title: 'Scan à chaque transfert', desc: "Chaque acteur scanne en 5 secondes à chaque mouvement. L'application fonctionne sur n'importe quel smartphone.", color: 'bg-purple-500' },
+            { step: '3', title: 'Data en temps réel', desc: 'La donnée remonte instantanément — localisation, durée, incidents, insights IA. Plus aucun fût ne disparaît silencieusement.', color: 'bg-emerald-500' },
           ].map(item => (
             <div key={item.step} className="text-center">
               <div className={`w-12 h-12 ${item.color} text-white rounded-xl flex items-center justify-center text-lg font-bold mx-auto mb-4 shadow-lg`}>
@@ -605,30 +525,326 @@ function HowItWorksSection() {
             </div>
           ))}
         </div>
+      </div>
+    </section>
+  )
+}
 
-        <div className="text-center mt-12 mb-4">
-          <p className="text-slate-500 font-medium">Aperçu des tableaux de bord par acteur</p>
+// ─── Data benefits ────────────────────────────────────────────────────────────
+
+const DATA_BENEFITS = [
+  {
+    actor: 'Brasseur',
+    icon: '🏭',
+    color: 'blue',
+    headline: 'Moins de pertes, plus de décisions data-driven',
+    benefits: [
+      { title: 'Moins de fûts perdus', desc: 'Les alertes proactives à 30j permettent de récupérer les fûts avant qu\'ils disparaissent. Taux de retour moyen de nos clients : 98,7%.' },
+      { title: 'Lancez vos brassins au bon moment', desc: 'La donnée de consommation remontée par les bars vous indique quand votre stock va s\'épuiser. Fini les ruptures ou la surproduction.' },
+      { title: 'Qualité lot par lot', desc: 'Corrélation automatique entre incidents signalés et numéros de lot. Identifiez un problème de recette ou de conditionnement en quelques heures, pas en semaines.' },
+    ],
+  },
+  {
+    actor: 'Distributeur',
+    icon: '🚚',
+    color: 'purple',
+    headline: 'Tournées optimisées, litiges éliminés',
+    benefits: [
+      { title: 'Données de stock réelles à J-0', desc: 'Chaque scan mis à jour en temps réel. Vos tournées sont planifiées sur des données exactes, pas des estimations.' },
+      { title: 'Fin des litiges de consigne', desc: 'Chaque mouvement est horodaté et signé par le scan. La réconciliation prend 2 minutes au lieu de 2 heures.' },
+      { title: 'Priorisation automatique', desc: 'Les fûts en retard sont classés par impact sur votre taux de retour. Vous savez toujours quoi récupérer en priorité.' },
+    ],
+  },
+  {
+    actor: 'Bar',
+    icon: '🍺',
+    color: 'emerald',
+    headline: 'Zéro rupture, meilleures offres',
+    benefits: [
+      { title: 'Approvisionnement guidé par la donnée', desc: 'Commandez le bon volume, au bon moment. Les recommandations IA tiennent compte de votre rotation réelle et de la saisonnalité.' },
+      { title: 'Offres commerciales personnalisées', desc: 'Plus vous scannez, plus vous débloquez des offres exclusives. Le brasseur récompense votre engagement avec des remises ciblées.' },
+      { title: 'Visibilité sur votre cave', desc: 'Âge de chaque fût, alertes de fraîcheur, rotation par bière. Votre cave devient un atout, pas une boîte noire.' },
+    ],
+  },
+]
+
+function DataBenefitsSection() {
+  const colorMap = {
+    blue: { bg: 'bg-blue-50', border: 'border-blue-100', badge: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500' },
+    purple: { bg: 'bg-purple-50', border: 'border-purple-100', badge: 'bg-purple-100 text-purple-700', dot: 'bg-purple-500' },
+    emerald: { bg: 'bg-emerald-50', border: 'border-emerald-100', badge: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
+  }
+
+  return (
+    <section className="py-24 bg-white">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <h2 className="text-3xl font-bold text-[#0F172A] mb-3">La data partagée profite à toute la chaîne</h2>
+          <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+            Chaque scan enrichit une base de données commune. Plus vous utilisez la plateforme, plus vos décisions deviennent précises.
+          </p>
         </div>
 
-        <DashboardMockups />
+        <div className="grid md:grid-cols-3 gap-6">
+          {DATA_BENEFITS.map(actor => {
+            const c = colorMap[actor.color]
+            return (
+              <div key={actor.actor} className={`rounded-2xl border ${c.border} p-6 ${c.bg}`}>
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="text-2xl">{actor.icon}</span>
+                  <div>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${c.badge}`}>{actor.actor}</span>
+                    <p className="text-sm font-semibold text-[#0F172A] mt-1 leading-snug">{actor.headline}</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {actor.benefits.map(b => (
+                    <div key={b.title} className="flex gap-3">
+                      <div className={`w-1.5 h-1.5 rounded-full ${c.dot} mt-2 shrink-0`} />
+                      <div>
+                        <div className="text-xs font-bold text-[#0F172A] mb-0.5">{b.title}</div>
+                        <div className="text-xs text-slate-600 leading-relaxed">{b.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
 
-        <div className="flex justify-center gap-4 mt-10">
-          <Link to="/brewery" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
-            Dashboard Brasseur →
-          </Link>
-          <Link to="/distributor" className="text-sm font-semibold text-purple-600 hover:text-purple-700 transition-colors">
-            Dashboard Distributeur →
-          </Link>
-          <Link to="/bar" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">
-            Dashboard Bar →
-          </Link>
+        <div className="mt-10 bg-[#0F172A] rounded-2xl p-8 text-center">
+          <div className="text-white text-xl font-bold mb-2">L'effet réseau Angel's Share</div>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto mb-6">
+            Plus vos partenaires utilisent la plateforme, plus les données sont précises — et plus les insights de l'IA deviennent pertinents pour tous.
+          </p>
+          <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
+            {[
+              { v: '< 5s', l: 'par scan' },
+              { v: '98,7%', l: 'taux de retour moyen' },
+              { v: '×4,2', l: 'ROI moyen an 1' },
+            ].map(s => (
+              <div key={s.l} className="text-center">
+                <div className="text-2xl font-extrabold text-white">{s.v}</div>
+                <div className="text-xs text-slate-400 mt-0.5">{s.l}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
   )
 }
 
+// ─── Dashboard previews (north star) ─────────────────────────────────────────
+
+const DASHBOARD_CARDS = [
+  {
+    actor: 'Brasseur',
+    icon: '🏭',
+    color: 'blue',
+    northStar: 'Récupérez jusqu\'à 43 000€/an',
+    metric: '98,7% de taux de retour',
+    subMetrics: [
+      { label: 'Alertes proactives à 30j', value: '100%' },
+      { label: 'Fûts récupérés ce mois', value: '28' },
+      { label: 'Incidents traités', value: '< 48h' },
+    ],
+    to: '/brewery',
+    cta: 'Voir le dashboard brasseur',
+  },
+  {
+    actor: 'Distributeur',
+    icon: '🚚',
+    color: 'purple',
+    northStar: '−60% de temps sur les consignes',
+    metric: 'Tournées optimisées en temps réel',
+    subMetrics: [
+      { label: 'Réconciliation automatique', value: '100%' },
+      { label: 'Litiges évités / mois', value: '12' },
+      { label: 'Économies carburant', value: '~45€/tournée' },
+    ],
+    to: '/distributor',
+    cta: 'Voir le dashboard distributeur',
+  },
+  {
+    actor: 'Bar',
+    icon: '🍺',
+    color: 'emerald',
+    northStar: 'Zéro rupture, commandes optimisées',
+    metric: '+23% d\'efficacité sur les commandes',
+    subMetrics: [
+      { label: 'Recommandations IA', value: 'hebdo' },
+      { label: 'Offres exclusives débloquées', value: '3' },
+      { label: 'Rotation IPA Mosaic', value: '4,2 jours' },
+    ],
+    to: '/bar',
+    cta: 'Voir le dashboard bar',
+  },
+]
+
+function DashboardPreviewSection() {
+  const colorMap = {
+    blue: { badge: 'bg-blue-100 text-blue-700', border: 'border-blue-100', star: 'text-blue-600', btn: 'bg-blue-600 hover:bg-blue-700' },
+    purple: { badge: 'bg-purple-100 text-purple-700', border: 'border-purple-100', star: 'text-purple-600', btn: 'bg-purple-600 hover:bg-purple-700' },
+    emerald: { badge: 'bg-emerald-100 text-emerald-700', border: 'border-emerald-100', star: 'text-emerald-600', btn: 'bg-emerald-600 hover:bg-emerald-700' },
+  }
+
+  return (
+    <section className="py-24 bg-[#F8FAFC]">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <h2 className="text-3xl font-bold text-[#0F172A] mb-3">Un tableau de bord par acteur</h2>
+          <p className="text-slate-500 text-lg">Chaque dashboard est conçu pour une seule chose : votre métrique principale.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {DASHBOARD_CARDS.map(card => {
+            const c = colorMap[card.color]
+            return (
+              <div key={card.actor} className={`bg-white rounded-2xl border ${c.border} shadow-sm overflow-hidden flex flex-col`}>
+                <div className="p-6 flex-1">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-xl">{card.icon}</span>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${c.badge}`}>{card.actor}</span>
+                  </div>
+                  <div className={`text-2xl font-extrabold ${c.star} mb-1 leading-snug`}>{card.northStar}</div>
+                  <div className="text-sm text-slate-500 mb-5">{card.metric}</div>
+
+                  <div className="space-y-2">
+                    {card.subMetrics.map(m => (
+                      <div key={m.label} className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500">{m.label}</span>
+                        <span className="font-bold text-[#0F172A]">{m.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="p-4 border-t border-slate-100">
+                  <Link to={card.to} className={`block text-center text-white text-sm font-semibold py-2.5 rounded-xl transition-colors ${c.btn}`}>
+                    {card.cta} →
+                  </Link>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─── ERP / Technical integrations ────────────────────────────────────────────
+
+const ERP_SYSTEMS = [
+  { name: 'Sage', logo: 'S', color: 'bg-green-100 text-green-700' },
+  { name: 'Cegid', logo: 'C', color: 'bg-blue-100 text-blue-700' },
+  { name: 'Odoo', logo: 'O', color: 'bg-purple-100 text-purple-700' },
+  { name: 'SAP', logo: 'SAP', color: 'bg-amber-100 text-amber-700' },
+  { name: 'Pennylane', logo: 'P', color: 'bg-pink-100 text-pink-700' },
+  { name: 'QuickBooks', logo: 'QB', color: 'bg-slate-100 text-slate-600' },
+]
+
+const INTEGRATION_METHODS = [
+  {
+    title: 'API REST',
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M8 9l3 3-3 3M13 15h3M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    desc: 'Endpoints documentés (OpenAPI). Poussez ou récupérez vos données fûts, consignes et incidents en temps réel depuis n\'importe quel système.',
+  },
+  {
+    title: 'Webhooks',
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    desc: 'Déclenchez des événements dans vos outils dès qu\'un fût est scanné, un incident ouvert ou un seuil de retard atteint.',
+  },
+  {
+    title: 'Export CSV / Excel',
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points="14 2 14 8 20 8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    desc: 'Export planifié ou manuel vers vos outils de reporting existants. Compatible Excel, Google Sheets, Power BI.',
+  },
+  {
+    title: 'Connecteurs ERP',
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    desc: 'Connecteurs natifs pour Sage, Cegid, Odoo et SAP. Synchronisation bidirectionnelle des articles, mouvements de stock et écritures comptables.',
+  },
+]
+
+function ErpSection() {
+  return (
+    <section className="py-24 bg-white">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <div className="inline-block bg-slate-100 text-slate-600 rounded-full px-4 py-1 text-sm font-semibold mb-4">Technique</div>
+          <h2 className="text-3xl font-bold text-[#0F172A] mb-3">S'intègre dans votre écosystème</h2>
+          <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+            Angel's Share se connecte à vos outils existants. Pas de double saisie, pas de rupture de workflow.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-5 mb-12">
+          {INTEGRATION_METHODS.map(m => (
+            <div key={m.title} className="bg-[#F8FAFC] border border-slate-100 rounded-2xl p-6 flex gap-4">
+              <div className="w-10 h-10 bg-[#0F172A] text-white rounded-xl flex items-center justify-center shrink-0">
+                {m.icon}
+              </div>
+              <div>
+                <div className="font-bold text-[#0F172A] mb-1">{m.title}</div>
+                <p className="text-slate-500 text-sm leading-relaxed">{m.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-[#F8FAFC] border border-slate-100 rounded-2xl p-8">
+          <div className="text-center mb-6">
+            <div className="font-bold text-[#0F172A] mb-1">Connecteurs disponibles</div>
+            <p className="text-slate-500 text-sm">Intégrations certifiées, mises à jour et maintenues par notre équipe</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3">
+            {ERP_SYSTEMS.map(erp => (
+              <div key={erp.name} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white`}>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-extrabold ${erp.color}`}>
+                  {erp.logo}
+                </div>
+                <span className="text-sm font-semibold text-[#0F172A]">{erp.name}</span>
+              </div>
+            ))}
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-slate-300">
+              <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-lg">+</div>
+              <span className="text-sm text-slate-400 font-medium">Et plus...</span>
+            </div>
+          </div>
+          <div className="mt-6 text-center">
+            <p className="text-xs text-slate-400">Votre ERP n'est pas dans la liste ? <a href="#" className="text-blue-600 font-semibold hover:text-blue-700">Contactez-nous</a> — nous développons des connecteurs sur demande.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─── Landing ──────────────────────────────────────────────────────────────────
+
 export default function Landing() {
+  const [leadOpen, setLeadOpen] = useState(false)
+
   return (
     <div className="min-h-screen bg-white">
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0F172A]/95 backdrop-blur-sm">
@@ -637,14 +853,17 @@ export default function Landing() {
           <div className="hidden md:flex items-center gap-6">
             <a href="#audiences" className="text-slate-300 hover:text-white text-sm transition-colors">Fonctionnalités</a>
             <a href="#pricing" className="text-slate-300 hover:text-white text-sm transition-colors">Tarifs</a>
-            <Link to="/brewery" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
-              Voir les dashboards
-            </Link>
+            <button
+              onClick={() => setLeadOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+            >
+              Essai gratuit
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
+      {/* 1. Hero */}
       <section className="relative min-h-screen flex items-center bg-[#0F172A]">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
@@ -662,39 +881,43 @@ export default function Landing() {
             La plateforme qui connecte brasseurs, distributeurs et bars pour éliminer les pertes de fûts.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#audiences" className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-4 rounded-xl text-lg transition-colors">
+            <button
+              onClick={() => setLeadOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-4 rounded-xl text-lg transition-colors"
+            >
+              Démarrer mon essai gratuit
+            </button>
+            <a href="#audiences" className="border-2 border-white/20 hover:border-white/50 text-white font-bold px-8 py-4 rounded-xl text-lg transition-colors">
               Découvrir la plateforme
-            </a>
-            <a href="#roi" className="border-2 border-white/20 hover:border-white/50 text-white font-bold px-8 py-4 rounded-xl text-lg transition-colors">
-              Calculer mon ROI
             </a>
           </div>
         </div>
       </section>
 
-      {/* Problem stat */}
+      {/* 2. Problem stat */}
       <section className="py-20 bg-[#0A0F1A]">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <p className="text-slate-300 text-xl mb-8 leading-relaxed">
-            3 à 5% des fûts disparaissent chaque année. 100–150€ pièce.<br />
+            3 à 5% des fûts disparaissent chaque année. Pertes, litiges de consigne, coûts de remplacement.<br />
             <strong className="text-white">Personne ne sait où ils sont.</strong>
           </p>
           <div className="bg-white/5 border border-white/10 rounded-2xl p-10 inline-block">
-            <div className="text-6xl md:text-7xl font-extrabold text-red-400 mb-3">12 000€</div>
-            <div className="text-white text-xl font-semibold">perdus par an</div>
-            <div className="text-slate-400 mt-2">pour une brasserie de 300 fûts</div>
+            <div className="text-6xl md:text-7xl font-extrabold text-red-400 mb-3">52 000€</div>
+            <div className="text-white text-xl font-semibold">d'impact annuel</div>
+            <div className="text-slate-400 mt-2">pour une brasserie de 1 000 fûts</div>
+            <div className="text-slate-500 text-xs mt-1">pertes + litiges consignes + coûts de remplacement</div>
           </div>
         </div>
       </section>
 
-      {/* Social proof bar */}
+      {/* 3. Social proof bar */}
       <section className="bg-white border-b border-slate-100">
         <div className="max-w-5xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            { value: '97,3%', label: 'taux de retour moyen de nos clients' },
+            { value: '98,7%', label: 'taux de retour moyen de nos clients' },
             { value: '< 5s', label: 'par scan à chaque transfert' },
             { value: '×4,2', label: 'ROI moyen dès la 1ère année' },
-            { value: '3 acteurs', label: 'connectés sur une seule plateforme' },
+            { value: '100%', label: 'de la logistique circulaire tracée en temps réel' },
           ].map(s => (
             <div key={s.label}>
               <div className="text-3xl font-extrabold text-[#0F172A] mb-1">{s.value}</div>
@@ -704,13 +927,26 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* 4. Audience section */}
       <AudienceSection />
 
+      {/* 5. How it works */}
       <HowItWorksSection />
 
-      <RoiCalculator />
+      {/* 6. Data benefits */}
+      <DataBenefitsSection />
 
-      <PricingSection />
+      {/* 7. ROI Calculator */}
+      <RoiCalculator onOpenLead={() => setLeadOpen(true)} />
+
+      {/* 8. Pricing */}
+      <PricingSection onOpenLead={() => setLeadOpen(true)} />
+
+      {/* 9. Dashboard previews — penultimate */}
+      <DashboardPreviewSection />
+
+      {/* 10. ERP / Technical — last */}
+      <ErpSection />
 
       <footer className="bg-[#0F172A] py-12">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -726,6 +962,8 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {leadOpen && <LeadGenModal onClose={() => setLeadOpen(false)} />}
     </div>
   )
 }
