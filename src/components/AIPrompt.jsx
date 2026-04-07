@@ -96,10 +96,16 @@ export default function AIPrompt({ getResponse, insights = [], triggerQuery = nu
 
   useEffect(() => {
     if (!triggerQuery?.text) return
+    const text = triggerQuery.text
     setIsOpen(true)
     setTab('chat')
-    setQuery(triggerQuery.text)
-    setTimeout(() => inputRef.current?.focus(), 150)
+    setQuery('')
+    setMessages(prev => [...prev, { role: 'user', text }])
+    setIsThinking(true)
+    setTimeout(() => {
+      setMessages(prev => [...prev, { role: 'ai', text: getResponse(text) }])
+      setIsThinking(false)
+    }, 1200 + Math.random() * 600)
   }, [triggerQuery])
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 const AVG_COST = 130
@@ -426,6 +426,12 @@ function AudienceSection() {
 
 function KegFlowDiagram() {
   const [step, setStep] = useState(0)
+
+  useEffect(() => {
+    const t = setInterval(() => setStep(s => (s + 1) % 4), 2000)
+    return () => clearInterval(t)
+  }, [])
+
   const steps = [
     { from: 0, to: 1, label: 'Remplissage & QR code collé' },
     { from: 1, to: 2, label: 'Scan livraison distributeur' },
@@ -887,8 +893,8 @@ export default function Landing() {
             >
               Démarrer mon essai gratuit
             </button>
-            <a href="#audiences" className="border-2 border-white/20 hover:border-white/50 text-white font-bold px-8 py-4 rounded-xl text-lg transition-colors">
-              Découvrir la plateforme
+            <a href="#roi" className="border-2 border-white/20 hover:border-white/50 text-white font-bold px-8 py-4 rounded-xl text-lg transition-colors">
+              Calculer mon ROI
             </a>
           </div>
         </div>

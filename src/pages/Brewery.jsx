@@ -166,7 +166,14 @@ export default function Brewery() {
     clientIncidentCount[inc.reported_by] = (clientIncidentCount[inc.reported_by] || 0) + 1
   })
 
-  const { savings } = brewery
+  // ROI formula: annualBenefit = fleetSize × (currentLossRate − targetLossRate) × kegUnitCost
+  const KEG_UNIT_COST = 130
+  const ANNUAL_SUB = 119 * 12
+  const currentLossRate = 1 - currentRate / 100
+  const targetLossRate = 0.01
+  const annualBenefit = Math.round(brewery.fleet_size * (currentLossRate - targetLossRate) * KEG_UNIT_COST)
+  const roiMultiple = (annualBenefit / ANNUAL_SUB).toFixed(1)
+  const monthlyBenefit = Math.round(annualBenefit / 12)
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
@@ -243,28 +250,28 @@ export default function Brewery() {
 
           {/* Savings dashboard */}
           <div className="bg-gradient-to-r from-emerald-50 to-blue-50 border border-emerald-100 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="font-semibold text-[#0F172A] text-sm">Économies réalisées grâce à Angel's Share</h2>
-                <p className="text-slate-500 text-xs mt-0.5">Fûts récupérés via alertes proactives · Consignes tracées · Incidents évités</p>
-              </div>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="font-semibold text-[#0F172A] text-sm">Impact financier Angel's Share</h2>
               <AIButton onClick={() => triggerAI("Analyse mes économies et mon ROI avec Angel's Share")} label="Analyser" />
             </div>
+            <p className="text-slate-500 text-xs mb-4">
+              Basé sur {brewery.fleet_size.toLocaleString('fr-FR')} fûts × taux de retour actuel {currentRate}% vs objectif 99% × {KEG_UNIT_COST}€/fût
+            </p>
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-white rounded-xl border border-emerald-100 p-4 text-center">
-                <div className="text-xs text-slate-500 mb-1 uppercase tracking-wide">Fûts récupérés ce mois</div>
-                <div className="text-3xl font-extrabold text-emerald-600">{savings.monthly_kegs_recovered}</div>
-                <div className="text-sm font-semibold text-emerald-600 mt-1">+{savings.monthly_euros_saved.toLocaleString('fr-FR')}€</div>
+                <div className="text-xs text-slate-500 mb-1 uppercase tracking-wide">Gain mensuel estimé</div>
+                <div className="text-3xl font-extrabold text-emerald-600">{monthlyBenefit.toLocaleString('fr-FR')}€</div>
+                <div className="text-xs text-slate-400 mt-1">pertes évitées / mois</div>
               </div>
               <div className="bg-white rounded-xl border border-blue-100 p-4 text-center">
-                <div className="text-xs text-slate-500 mb-1 uppercase tracking-wide">Projection annuelle</div>
-                <div className="text-3xl font-extrabold text-blue-600">{savings.annual_projected.toLocaleString('fr-FR')}€</div>
-                <div className="text-xs text-slate-400 mt-1">économisés cette année</div>
+                <div className="text-xs text-slate-500 mb-1 uppercase tracking-wide">Bénéfice annuel</div>
+                <div className="text-3xl font-extrabold text-blue-600">{annualBenefit.toLocaleString('fr-FR')}€</div>
+                <div className="text-xs text-slate-400 mt-1">vs 1 428€ d'abonnement/an</div>
               </div>
               <div className="bg-white rounded-xl border border-slate-100 p-4 text-center">
-                <div className="text-xs text-slate-500 mb-1 uppercase tracking-wide">Jamais perdus YTD</div>
-                <div className="text-3xl font-extrabold text-[#0F172A]">{savings.kegs_never_lost_ytd}</div>
-                <div className="text-xs text-slate-400 mt-1">fûts tracés en temps réel</div>
+                <div className="text-xs text-slate-500 mb-1 uppercase tracking-wide">ROI</div>
+                <div className="text-3xl font-extrabold text-[#0F172A]">×{roiMultiple}</div>
+                <div className="text-xs text-slate-400 mt-1">multiple dès l'an 1</div>
               </div>
             </div>
           </div>
