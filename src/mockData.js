@@ -107,9 +107,9 @@ export const mockData = {
     }
   },
   offers: [
-    { id: "offer_001", title: "-10% sur la Pale Ale Citra", description: "Fût 30L à 135€ au lieu de 150€", min_tier: "silver", type: "promo", expires: "2025-06-30" },
-    { id: "offer_002", title: "Avant-première : Berliner Weisse Framboise", description: "Accès avant-première, 12 fûts disponibles", min_tier: "gold", type: "exclusive", expires: "2025-07-15" },
-    { id: "offer_003", title: "Livraison offerte", description: "Sur votre prochaine commande de 5 fûts ou plus", min_tier: "platinum", type: "loyalty", expires: "2025-06-30" }
+    { id: "offer_001", title: "-10% sur la Pale Ale Citra", description: "Fût 30L à 135€ au lieu de 150€", min_tier: "silver", type: "promo", expires: "2026-05-06" },
+    { id: "offer_002", title: "Avant-première : Berliner Weisse Framboise", description: "Accès avant-première, 12 fûts disponibles", min_tier: "gold", type: "exclusive", expires: "2026-05-14" },
+    { id: "offer_003", title: "Livraison offerte", description: "Sur votre prochaine commande de 5 fûts ou plus", min_tier: "platinum", type: "loyalty", expires: "2026-05-07" }
   ],
   tiers: {
     silver: { label: "Silver", min_scans: 0, next_scans: 10, emoji: "🥈" },

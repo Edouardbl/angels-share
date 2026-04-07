@@ -1,12 +1,18 @@
 import { useState, useRef, useEffect } from 'react'
 
+const PRIORITY_STYLES = {
+  high: { bar: 'bg-red-500', badge: 'bg-red-50 text-red-600', label: 'Priorité haute' },
+  medium: { bar: 'bg-amber-400', badge: 'bg-amber-50 text-amber-700', label: 'À surveiller' },
+  low: { bar: 'bg-blue-400', badge: 'bg-blue-50 text-blue-600', label: 'Info' },
+}
+
 function TypingDots() {
   return (
     <div className="flex items-center gap-1 px-4 py-3">
       {[0, 150, 300].map(delay => (
         <span
           key={delay}
-          className="w-2 h-2 bg-[#1D9E75] rounded-full inline-block animate-dot-bounce"
+          className="w-1.5 h-1.5 bg-blue-400 rounded-full inline-block animate-dot-bounce"
           style={{ animationDelay: `${delay}ms` }}
         />
       ))}
@@ -14,19 +20,21 @@ function TypingDots() {
   )
 }
 
-function Message({ msg }) {
+function ChatMessage({ msg }) {
   const isUser = msg.role === 'user'
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in`}>
       {!isUser && (
-        <div className="w-7 h-7 rounded-full bg-[#1D9E75]/15 flex items-center justify-center text-sm shrink-0 mt-0.5 mr-2">
-          ✨
+        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5 mr-2">
+          <svg className="w-3 h-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+          </svg>
         </div>
       )}
       <div className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
         isUser
-          ? 'bg-[#1A2E44] text-white rounded-tr-sm'
-          : 'bg-[#F0FBF7] text-[#1A2E44] rounded-tl-sm border border-[#1D9E75]/15'
+          ? 'bg-[#0F172A] text-white rounded-tr-sm'
+          : 'bg-slate-50 text-[#0F172A] rounded-tl-sm border border-slate-200'
       }`}>
         {msg.text}
       </div>
@@ -34,21 +42,57 @@ function Message({ msg }) {
   )
 }
 
-export default function AIPrompt({ getResponse }) {
+function InsightCard({ insight, index, onFollowUp }) {
+  const p = PRIORITY_STYLES[insight.priority]
+  return (
+    <div
+      className="animate-card-in bg-white rounded-xl border border-slate-100 overflow-hidden hover:border-slate-200 transition-colors"
+      style={{ animationDelay: `${index * 90}ms`, animationFillMode: 'both', opacity: 0 }}
+    >
+      <div className={`h-0.5 ${p.bar}`} />
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="font-semibold text-[#0F172A] text-sm">{insight.title}</div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {insight.metric && (
+              <span className="font-bold text-xs text-slate-500">{insight.metric}</span>
+            )}
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${p.badge}`}>
+              {p.label}
+            </span>
+          </div>
+        </div>
+        <p className="text-slate-500 text-xs leading-relaxed mb-3">{insight.text}</p>
+        <button
+          onClick={() => onFollowUp(insight.followUp)}
+          className="text-xs text-blue-600 font-semibold hover:text-blue-700 transition-colors flex items-center gap-1"
+        >
+          Approfondir
+          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default function AIPrompt({ getResponse, insights = [] }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [tab, setTab] = useState('insights')
   const [query, setQuery] = useState('')
   const [messages, setMessages] = useState([
-    { role: 'ai', text: "Bonjour ! Je suis votre assistant Angel's Share. Demandez-moi une analyse, une optimisation ou une recommandation sur vos données." }
+    { role: 'ai', text: "Bonjour, je suis votre assistant Angel's Share. Posez-moi une question sur vos données ou utilisez les insights ci-contre." }
   ])
   const [isThinking, setIsThinking] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && tab === 'chat') {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
-  }, [isOpen])
+  }, [isOpen, tab])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -60,19 +104,16 @@ export default function AIPrompt({ getResponse }) {
     setMessages(prev => [...prev, userMsg])
     setQuery('')
     setIsThinking(true)
-    const delay = 1200 + Math.random() * 800
     setTimeout(() => {
-      const response = getResponse(userMsg.text)
-      setMessages(prev => [...prev, { role: 'ai', text: response }])
+      setMessages(prev => [...prev, { role: 'ai', text: getResponse(userMsg.text) }])
       setIsThinking(false)
-    }, delay)
+    }, 1200 + Math.random() * 800)
   }
 
-  const handleKey = e => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit()
-    }
+  const handleFollowUp = (q) => {
+    setTab('chat')
+    setQuery(q)
+    setTimeout(() => inputRef.current?.focus(), 100)
   }
 
   const suggestions = ['Comment améliorer mon taux de retour ?', 'Analyse mes fûts dormants', 'Quels clients prioriser ?']
@@ -82,83 +123,129 @@ export default function AIPrompt({ getResponse }) {
       {/* Floating button */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#1A2E44] hover:bg-[#243d57] text-white rounded-full shadow-2xl flex items-center justify-center text-xl transition-all hover:scale-110"
-          title="Assistant IA"
+          onClick={() => { setIsOpen(true); setTab('insights') }}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#0F172A] hover:bg-[#1E293B] text-white pl-4 pr-5 py-3 rounded-full shadow-xl transition-all hover:scale-105 text-sm font-semibold"
         >
-          ✨
+          <span className="relative flex h-2 w-2">
+            <span className="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+          </span>
+          Analyses IA
         </button>
       )}
 
       {/* Panel */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[560px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden animate-fade-in">
+        <div className="fixed bottom-6 right-6 z-50 w-[400px] max-h-[600px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-slide-up">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-[#1A2E44] rounded-t-2xl">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">✨</span>
-              <div>
-                <div className="text-white font-semibold text-sm">Assistant Angel's Share</div>
-                <div className="text-[#1D9E75] text-xs">Optimisations & analyses</div>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
+                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                </svg>
               </div>
+              <span className="font-semibold text-[#0F172A] text-sm">Analyses IA</span>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white transition-colors text-lg leading-none">✕</button>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-0">
-            {messages.map((msg, i) => <Message key={i} msg={msg} />)}
-            {isThinking && (
-              <div className="flex justify-start animate-fade-in">
-                <div className="w-7 h-7 rounded-full bg-[#1D9E75]/15 flex items-center justify-center text-sm shrink-0 mt-0.5 mr-2">✨</div>
-                <div className="bg-[#F0FBF7] border border-[#1D9E75]/15 rounded-2xl rounded-tl-sm">
-                  <TypingDots />
-                </div>
+            <div className="flex items-center gap-1">
+              {/* Tabs */}
+              <div className="flex bg-slate-100 rounded-lg p-0.5 mr-2">
+                {['insights', 'chat'].map(t => (
+                  <button
+                    key={t}
+                    onClick={() => setTab(t)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                      tab === t
+                        ? 'bg-white text-[#0F172A] shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    {t === 'insights' ? 'Insights' : 'Chat'}
+                  </button>
+                ))}
               </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
-
-          {/* Suggestions (only if no user messages yet) */}
-          {messages.length === 1 && (
-            <div className="px-4 pb-2 flex flex-wrap gap-1.5">
-              {suggestions.map(s => (
-                <button
-                  key={s}
-                  onClick={() => { setQuery(s); setTimeout(() => inputRef.current?.focus(), 50) }}
-                  className="text-xs bg-gray-50 hover:bg-[#F0FBF7] border border-gray-200 hover:border-[#1D9E75]/30 text-gray-600 hover:text-[#1A2E44] px-3 py-1.5 rounded-full transition-colors"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Input */}
-          <div className="px-3 py-3 border-t border-gray-100">
-            <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200 focus-within:border-[#1D9E75] transition-colors">
-              <input
-                ref={inputRef}
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                onKeyDown={handleKey}
-                placeholder="Demandez une optimisation..."
-                className="flex-1 bg-transparent text-sm outline-none text-[#1A2E44] placeholder-gray-400"
-                disabled={isThinking}
-              />
               <button
-                onClick={handleSubmit}
-                disabled={!query.trim() || isThinking}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors text-sm ${
-                  query.trim() && !isThinking
-                    ? 'bg-[#1D9E75] text-white hover:bg-[#178a64]'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                }`}
+                onClick={() => setIsOpen(false)}
+                className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm"
               >
-                ↑
+                ✕
               </button>
             </div>
           </div>
+
+          {/* Insights tab */}
+          {tab === 'insights' && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+              {insights.length === 0 ? (
+                <div className="text-center text-slate-400 text-sm py-8">Aucun insight disponible</div>
+              ) : (
+                insights.map((insight, i) => (
+                  <InsightCard key={insight.id} insight={insight} index={i} onFollowUp={handleFollowUp} />
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Chat tab */}
+          {tab === 'chat' && (
+            <>
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-0">
+                {messages.map((msg, i) => <ChatMessage key={i} msg={msg} />)}
+                {isThinking && (
+                  <div className="flex justify-start animate-fade-in">
+                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5 mr-2">
+                      <svg className="w-3 h-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                      </svg>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-sm">
+                      <TypingDots />
+                    </div>
+                  </div>
+                )}
+                <div ref={bottomRef} />
+              </div>
+
+              {messages.length === 1 && (
+                <div className="px-4 pb-2 flex flex-wrap gap-1.5 shrink-0">
+                  {suggestions.map(s => (
+                    <button
+                      key={s}
+                      onClick={() => { setQuery(s); setTimeout(() => inputRef.current?.focus(), 50) }}
+                      className="text-xs bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 text-slate-600 hover:text-blue-700 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="px-3 py-3 border-t border-slate-100 shrink-0">
+                <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2 border border-slate-200 focus-within:border-blue-400 transition-colors">
+                  <input
+                    ref={inputRef}
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit() } }}
+                    placeholder="Posez une question..."
+                    className="flex-1 bg-transparent text-sm outline-none text-[#0F172A] placeholder-slate-400"
+                    disabled={isThinking}
+                  />
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!query.trim() || isThinking}
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-sm ${
+                      query.trim() && !isThinking
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    }`}
+                  >
+                    ↑
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </>
